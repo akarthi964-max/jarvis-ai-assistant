@@ -2,6 +2,7 @@
 JARVIS AI Assistant with Voice Input/Output
 Random Joke Generator with Voice Interaction
 Uses Google Speech Recognition and Text-to-Speech (no PyAudio required)
+FIXED VERSION - No Timeout errors
 """
 
 import requests
@@ -156,7 +157,9 @@ class VoiceAssistant:
         try:
             with sr.Microphone() as source:
                 print("🎤 Listening...\n")
-                audio = self.recognizer.listen(source, timeout=5)
+                # Adjust for ambient noise
+                self.recognizer.adjust_for_ambient_noise(source, duration=0.5)
+                audio = self.recognizer.listen(source, timeout=5, phrase_time_limit=10)
             
             text = self.recognizer.recognize_google(audio)
             print(f"👤 You said: {text}\n")
@@ -168,8 +171,8 @@ class VoiceAssistant:
         except sr.RequestError as e:
             self.speak(f"Could not reach the speech recognition service: {e}")
             return None
-        except sr.Timeout:
-            self.speak("Listening timed out. Please try again.")
+        except Exception as e:
+            print(f"Listening error: {e}")
             return None
     
     def process_command(self, command: str):
@@ -215,11 +218,11 @@ class VoiceAssistant:
         # Help command
         elif any(word in command for word in ['help', 'what can you do', 'capabilities']):
             help_text = """I can help you with the following:
-            - Tell you jokes or funny stories
-            - Tell you the current time
-            - Respond to greetings
-            - Exit when you ask me to quit
-            Just speak naturally and I'll do my best to help!"""
+            Tell you jokes or funny stories
+            Tell you the current time
+            Respond to greetings
+            Exit when you ask me to quit
+            Just speak naturally and I will do my best to help!"""
             self.speak(help_text)
             return True
         
@@ -244,7 +247,7 @@ class VoiceAssistant:
 def main():
     """Main function to run JARVIS Voice Assistant"""
     print("\n" + "="*60)
-    print("🤖 JARVIS - Voice-Enabled AI Assistant 🤖")
+    print("🤖 JARVIS - Voice-Enabled AI Assistant")
     print("="*60)
     print("\nInitializing JARVIS...\n")
     
@@ -254,9 +257,9 @@ def main():
     except Exception as e:
         print(f"Error initializing JARVIS: {e}")
         print("\nNote: Make sure you have:")
-        print("  - Microphone connected to your system")
-        print("  - Internet connection for speech recognition")
-        print("  - Required packages installed (see requirements.txt)")
+        print("  ✓ Microphone connected to your system")
+        print("  ✓ Internet connection for speech recognition")
+        print("  ✓ Required packages installed (pip install -r requirements.txt)")
 
 
 if __name__ == "__main__":
